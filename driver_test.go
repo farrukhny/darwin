@@ -319,7 +319,7 @@ func Test_transaction_panic_with_message(t *testing.T) {
 }
 
 func escapeQuery(s string) string {
-	re := regexp.MustCompile("\\s+")
+	re := regexp.MustCompile(" ")
 
 	s1 := regexp.QuoteMeta(s)
 	s1 = strings.TrimSpace(re.ReplaceAllString(s1, " "))

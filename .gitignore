@@ -3,6 +3,8 @@
 *.a
 *.so
 
+staticcheck
+
 # Folders
 _obj
 _test

@@ -5,7 +5,7 @@ type MySQLDialect struct{}
 
 // CreateTableSQL returns the SQL to create the schema table
 func (m MySQLDialect) CreateTableSQL() string {
-	return `CREATE TABLE IF NOT EXISTS darwin_migrations
+	return `CREATE TABLE IF NOT EXISTS db_version
                 (
                     id             INT          auto_increment,
                     version        FLOAT        NOT NULL,
@@ -20,7 +20,7 @@ func (m MySQLDialect) CreateTableSQL() string {
 
 // InsertSQL returns the SQL to insert a new migration in the schema table
 func (m MySQLDialect) InsertSQL() string {
-	return `INSERT INTO darwin_migrations
+	return `INSERT INTO db_version
                 (
                     version,
                     description,
@@ -40,6 +40,6 @@ func (m MySQLDialect) AllSQL() string {
                 applied_at,
                 execution_time
             FROM 
-                darwin_migrations
+                db_version
             ORDER BY version ASC;`
 }

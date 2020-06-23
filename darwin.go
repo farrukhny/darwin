@@ -12,7 +12,7 @@ import (
 type Status int
 
 const (
-	// Ignored means that the migrations was not appied to the database
+	// Ignored means that the migrations was not applied to the database
 	Ignored Status = iota
 	// Applied means that the migrations was successfully applied to the database
 	Applied
