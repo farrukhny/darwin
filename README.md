@@ -1,9 +1,3 @@
-[![Build Status](https://travis-ci.org/dimiro1/darwin.svg?branch=master)](https://travis-ci.org/dimiro1/darwin)
-[![Go Report Card](https://goreportcard.com/badge/github.com/dimiro1/darwin)](https://goreportcard.com/report/github.com/dimiro1/darwin)
-[![GoDoc](https://godoc.org/github.com/dimiro1/darwin?status.svg)](https://godoc.org/github.com/dimiro1/darwin)
-
-Try browsing [the code on Sourcegraph](https://sourcegraph.com/github.com/dimiro1/darwin)!
-
 # Darwin
 
 Database schema evolution library for Go

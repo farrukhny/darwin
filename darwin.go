@@ -44,7 +44,7 @@ var mutex = &sync.Mutex{}
 type Migration struct {
 	Version     float64
 	Description string
-	
+
 	// language=sql
 	Script      string
 }
