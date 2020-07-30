@@ -44,7 +44,7 @@ var mutex = &sync.Mutex{}
 type Migration struct {
 	Version     float64
 	Description string
-	Script      string
+	Script      string // language=sql
 }
 
 // Checksum calculate the Script md5
