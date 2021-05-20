@@ -17,7 +17,7 @@ import (
 
 var schema = `-- Version: 1.0
 -- Description: Create table products
-CREATE TABLE products (
+CREATE TABLE user (
 	user_id   UUID,
 	name         TEXT,
 	email         TEXT,
