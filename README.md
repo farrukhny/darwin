@@ -11,28 +11,22 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/dimiro1/darwin"
+	"github.com/farrukhny/darwin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var (
-	migrations = []darwin.Migration{
-		{
-			Version:     1,
-			Description: "Creating table posts",
-			Script: `CREATE TABLE posts (
-						id INT 		auto_increment, 
-						title 		VARCHAR(255),
-						PRIMARY KEY (id)
-					 ) ENGINE=InnoDB CHARACTER SET=utf8;`,
-		},
-		{
-			Version:     2,
-			Description: "Adding column body",
-			Script:      "ALTER TABLE posts ADD body TEXT AFTER title;",
-		},
-	}
-)
+var schema = `-- Version: 1.0
+-- Description: Create table products
+CREATE TABLE products (
+	user_id   UUID,
+	name         TEXT,
+	email         TEXT,
+	password     TEXT,
+	date_created TIMESTAMP,
+	date_updated TIMESTAMP,
+
+	PRIMARY KEY (user_id)
+);`
 
 func main() {
 	database, err := sql.Open("mysql", "root:@/darwin")
@@ -43,7 +37,7 @@ func main() {
 
 	driver := darwin.NewGenericDriver(database, darwin.MySQLDialect{})
 
-	d := darwin.New(driver, migrations, nil)
+	d := darwin.New(driver, darwin.ParseMigrations(schema))
 	err = d.Migrate()
 
 	if err != nil {
@@ -51,35 +45,6 @@ func main() {
 	}
 }
 ```
-
-# Questions
-
-Q. Why there is no command line utility?
-
-A. The purpose of this library is just be a library.
-
-Q. How can I read migrations from file system?
-
-A. You can use the standard library for reading and build the migration list.
-
-Q. Can I put more than one statement in the same Script migration?
-
-A. I do not recommend it. Put one database change per migration, and if some migration fail, you know exactly what statement caused the error. Also only postgres handles rollback in DDL transactions correctly. 
-
-To be less annoying you can organize your migrations using semver, like `1.0`, `1.1`, `1.2` and so on.
-
-Q. Why there is no downgrade migrations?
-
-A. Please read https://flywaydb.org/documentation/faq#downgrade
-
-Q. Does Darwin performs a roll back if migration fails?
-
-A. Please read https://flywaydb.org/documentation/faq#rollback
-
-Q. What is the best strategy to deal with hot fixes?
-
-A. Plese read https://flywaydb.org/documentation/faq#hot-fixes
-
 
 # LICENSE
 

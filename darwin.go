@@ -67,7 +67,6 @@ type MigrationInfo struct {
 type Darwin struct {
 	driver     Driver
 	migrations []Migration
-	infoChan   chan MigrationInfo
 }
 
 // Validate if the database migrations are applied and consistent
@@ -77,7 +76,7 @@ func (d Darwin) Validate() error {
 
 // Migrate executes the missing migrations in database
 func (d Darwin) Migrate() error {
-	return Migrate(d.driver, d.migrations, d.infoChan)
+	return Migrate(d.driver, d.migrations)
 }
 
 // Info returns the status of all migrations
@@ -86,11 +85,10 @@ func (d Darwin) Info() ([]MigrationInfo, error) {
 }
 
 // New returns a new Darwin struct
-func New(driver Driver, migrations []Migration, infoChan chan MigrationInfo) Darwin {
+func New(driver Driver, migrations []Migration) Darwin {
 	return Darwin{
 		driver:     driver,
 		migrations: migrations,
-		infoChan:   infoChan,
 	}
 }
 
@@ -248,7 +246,7 @@ func getStatus(inDatabase []MigrationRecord, migration Migration) Status {
 }
 
 // Migrate executes the missing migrations in database.
-func Migrate(d Driver, migrations []Migration, infoChan chan MigrationInfo) error {
+func Migrate(d Driver, migrations []Migration) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -274,7 +272,6 @@ func Migrate(d Driver, migrations []Migration, infoChan chan MigrationInfo) erro
 		dur, err := d.Exec(migration.Script)
 
 		if err != nil {
-			notify(err, migration, infoChan)
 			return err
 		}
 
@@ -286,8 +283,6 @@ func Migrate(d Driver, migrations []Migration, infoChan chan MigrationInfo) erro
 			ExecutionTime: dur,
 		})
 
-		notify(err, migration, infoChan)
-
 		if err != nil {
 			return err
 		}
@@ -295,27 +290,6 @@ func Migrate(d Driver, migrations []Migration, infoChan chan MigrationInfo) erro
 	}
 
 	return nil
-}
-
-func notify(err error, migration Migration, infoChan chan MigrationInfo) {
-	status := Pending
-
-	if err != nil {
-		status = Error
-	} else {
-		status = Applied
-	}
-
-	// Send the migration over the infoChan
-	// The listener could print in the Stdout a message about the applied migration
-	if infoChan != nil {
-		infoChan <- MigrationInfo{
-			Status:    status,
-			Error:     err,
-			Migration: migration,
-		}
-	}
-
 }
 
 func wasRemovedMigration(applied []MigrationRecord, migrations []Migration) (float64, bool) {
