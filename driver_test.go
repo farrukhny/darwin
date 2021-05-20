@@ -15,7 +15,7 @@ import (
 
 func assertPanic(t *testing.T, f func()) {
 	defer func() {
-		if r := recover(); r == nil {
+		if r := recover(); r != nil {
 			t.Errorf("The code did not panic")
 		}
 	}()
@@ -53,7 +53,7 @@ func Test_GenericDriver_Create(t *testing.T) {
 	mock.ExpectExec(escapeQuery(dialect.CreateTableSQL())).WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectCommit()
 
-	d := NewGenericDriver(db, dialect)
+	d, _ := NewGenericDriver(db, dialect)
 	d.Create()
 
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -80,7 +80,7 @@ func Test_GenericDriver_Insert(t *testing.T) {
 
 	dialect := MySQLDialect{}
 
-	d := NewGenericDriver(db, dialect)
+	d, _ := NewGenericDriver(db, dialect)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(escapeQuery(dialect.InsertSQL())).
@@ -113,7 +113,7 @@ func Test_GenericDriver_All_success(t *testing.T) {
 
 	dialect := MySQLDialect{}
 
-	d := NewGenericDriver(db, dialect)
+	d, _ := NewGenericDriver(db, dialect)
 
 	rows := sqlmock.NewRows([]string{
 		"version", "description", "checksum", "applied_at", "execution_time", "success",
@@ -150,7 +150,7 @@ func Test_GenericDriver_All_error(t *testing.T) {
 
 	dialect := MySQLDialect{}
 
-	d := NewGenericDriver(db, dialect)
+	d, _ := NewGenericDriver(db, dialect)
 
 	mock.ExpectQuery(escapeQuery(dialect.AllSQL())).
 		WillReturnError(errors.New("Generic error"))
@@ -178,7 +178,7 @@ func Test_GenericDriver_Exec(t *testing.T) {
 	stmt := "CREATE TABLE HELLO (id INT);"
 	dialect := MySQLDialect{}
 
-	d := NewGenericDriver(db, dialect)
+	d, _ := NewGenericDriver(db, dialect)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(escapeQuery(stmt)).
@@ -204,7 +204,7 @@ func Test_GenericDriver_Exec_error(t *testing.T) {
 	stmt := "CREATE TABLE HELLO (id INT);"
 	dialect := MySQLDialect{}
 
-	d := NewGenericDriver(db, dialect)
+	d, _ := NewGenericDriver(db, dialect)
 
 	mock.ExpectBegin()
 	mock.ExpectExec(escapeQuery(stmt)).

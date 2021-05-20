@@ -2,6 +2,7 @@ package darwin
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -31,16 +32,16 @@ type GenericDriver struct {
 
 // NewGenericDriver creates a new GenericDriver configured with db and dialect.
 // Panic if db or dialect is nil
-func NewGenericDriver(db *sql.DB, dialect Dialect) *GenericDriver {
+func NewGenericDriver(db *sql.DB, dialect Dialect) (*GenericDriver, error) {
 	if db == nil {
-		panic("darwin: sql.DB is nil")
+		return nil, errors.New("darwin: sql.DB is nil")
 	}
 
 	if dialect == nil {
-		panic("darwin: dialect is nil")
+		return nil, errors.New("darwin: dialect is nil")
 	}
 
-	return &GenericDriver{DB: db, Dialect: dialect}
+	return &GenericDriver{DB: db, Dialect: dialect}, nil
 }
 
 // Create create the table darwin_migrations if necessary
@@ -134,7 +135,7 @@ func (m *GenericDriver) Exec(script string) (time.Duration, error) {
 // see: http://stackoverflow.com/a/23502629
 func transaction(db *sql.DB, f func(*sql.Tx) error) (err error) {
 	if db == nil {
-		panic("darwin: sql.DB is nil")
+		return  errors.New("darwin: sql.DB is nil")
 	}
 
 	tx, err := db.Begin()
