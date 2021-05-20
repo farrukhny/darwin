@@ -3,6 +3,7 @@ package darwin
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -126,6 +127,8 @@ func Test_GenericDriver_All_success(t *testing.T) {
 		WillReturnRows(rows)
 
 	migrations, _ := d.All()
+
+	fmt.Printf("%v", migrations)
 
 	if len(migrations) != 1 {
 		t.Errorf("len(migrations) == %d, wants 1", len(migrations))

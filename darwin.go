@@ -1,9 +1,12 @@
 package darwin
 
 import (
+	"bufio"
 	"crypto/md5"
 	"fmt"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -44,8 +47,6 @@ var mutex = &sync.Mutex{}
 type Migration struct {
 	Version     float64
 	Description string
-
-	// language=sql
 	Script      string
 }
 
@@ -91,6 +92,48 @@ func New(driver Driver, migrations []Migration, infoChan chan MigrationInfo) Dar
 		migrations: migrations,
 		infoChan:   infoChan,
 	}
+}
+
+// ParseMigrations takes a string that represents a text formatted set
+// of migrations and parse them for use.
+func ParseMigrations(s string) []Migration {
+	var migrations []Migration
+
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	scanner.Split(bufio.ScanLines)
+
+	var m Migration
+	var script string
+	for scanner.Scan() {
+		v := strings.ToLower(scanner.Text())
+
+		switch {
+		case strings.HasPrefix(strings.Replace(v, " ", "", 1), "--version:"):
+
+			m.Script = script
+			migrations = append(migrations, m)
+
+			m = Migration{}
+			script = ""
+
+			f, err := strconv.ParseFloat(strings.TrimSpace(v[11:]), 64)
+			if err != nil {
+				return nil
+			}
+			m.Version = f
+
+		case strings.HasPrefix(strings.Replace(v, " ", "", 1), "--description:"):
+			m.Description = strings.TrimSpace(v[15:])
+
+		default:
+			script += v + "\n"
+		}
+	}
+
+	m.Script = script
+	migrations = append(migrations, m)
+
+	return migrations[1:]
 }
 
 // DuplicateMigrationVersionError is used to report when the migration list has duplicated entries
@@ -160,7 +203,7 @@ func Validate(d Driver, migrations []Migration) error {
 
 // Info returns the status of all migrations
 func Info(d Driver, migrations []Migration) ([]MigrationInfo, error) {
-	info := []MigrationInfo{}
+	var info []MigrationInfo
 	records, err := d.All()
 
 	if err != nil {

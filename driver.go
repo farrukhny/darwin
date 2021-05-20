@@ -72,10 +72,9 @@ func (m *GenericDriver) Insert(e MigrationRecord) error {
 
 // All returns all migrations applied
 func (m *GenericDriver) All() ([]MigrationRecord, error) {
-	entries := []MigrationRecord{}
+	var entries []MigrationRecord
 
 	rows, err := m.DB.Query(m.Dialect.AllSQL())
-
 	if err != nil {
 		return []MigrationRecord{}, err
 	}
@@ -108,7 +107,12 @@ func (m *GenericDriver) All() ([]MigrationRecord, error) {
 		entries = append(entries, entry)
 	}
 
-	rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(rows)
 
 	return entries, nil
 }
