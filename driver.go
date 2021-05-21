@@ -44,7 +44,7 @@ func NewGenericDriver(db *sql.DB, dialect Dialect) (*GenericDriver, error) {
 	return &GenericDriver{DB: db, Dialect: dialect}, nil
 }
 
-// Create create the table darwin_migrations if necessary
+// Create create the table db_version if necessary
 func (m *GenericDriver) Create() error {
 	err := transaction(m.DB, func(tx *sql.Tx) error {
 		_, err := tx.Exec(m.Dialect.CreateTableSQL())
@@ -131,11 +131,9 @@ func (m *GenericDriver) Exec(script string) (time.Duration, error) {
 }
 
 // transaction is a utility function to execute the SQL inside a transaction
-// Panic if db is nil
-// see: http://stackoverflow.com/a/23502629
 func transaction(db *sql.DB, f func(*sql.Tx) error) (err error) {
 	if db == nil {
-		return  errors.New("darwin: sql.DB is nil")
+		return errors.New("darwin: sql.DB is nil")
 	}
 
 	tx, err := db.Begin()

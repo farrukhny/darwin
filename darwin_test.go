@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"testing"
 	"time"
 )
@@ -450,7 +449,7 @@ func TestParse(t *testing.T) {
 				buf.WriteString(mig.Script)
 			}
 
-			sql := strings.ToLower(schemaDoc)
+			sql := schemaDoc
 			if sql != buf.String() {
 				t.Logf("got: %s", buf.Bytes())
 				t.Logf("exp: %s", []byte(sql))
@@ -461,8 +460,8 @@ func TestParse(t *testing.T) {
 	}
 }
 
-var schemaDoc = `-- Version: 1.1
--- Description: Create table users
+var schemaDoc = `-- version: 1.1
+-- description: Create table users
 CREATE TABLE users (
 	user_id       UUID,
 	name          TEXT,
@@ -475,8 +474,8 @@ CREATE TABLE users (
 	PRIMARY KEY (user_id)
 );
 
--- Version: 1.2
--- Description: Create table products
+-- version: 1.2
+-- description: Create table products
 CREATE TABLE products (
 	product_id   UUID,
 	name         TEXT,
@@ -488,8 +487,8 @@ CREATE TABLE products (
 	PRIMARY KEY (product_id)
 );
 
--- Version: 1.3
--- Description: Create table sales
+-- version: 1.3
+-- description: Create table sales
 CREATE TABLE sales (
 	sale_id      UUID,
 	product_id   UUID,
@@ -501,8 +500,8 @@ CREATE TABLE sales (
 	FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- Version: 2.1
--- Description: Alter table products with user column"
+-- version: 2.1
+-- description: Alter table products with user column"
 ALTER TABLE products
 	ADD COLUMN user_id UUID DEFAULT '00000000-0000-0000-0000-000000000000'
 `

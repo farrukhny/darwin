@@ -46,6 +46,8 @@ func main() {
 }
 ```
 
+`func ParseMigrationsDirFiles(fsys embed.FS, dirName string) ([]Migration, error)` can be used to parse SQL files from embed.FS
+
 # LICENSE
 
 The MIT License (MIT)

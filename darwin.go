@@ -3,6 +3,7 @@ package darwin
 import (
 	"bufio"
 	"crypto/md5"
+	"embed"
 	"fmt"
 	"sort"
 	"strconv"
@@ -92,6 +93,29 @@ func New(driver Driver, migrations []Migration) Darwin {
 	}
 }
 
+// ParseMigrationsDirFiles takes a embed file system and directory name with sql
+// files that represents a text formatted set of migrations and parse them.
+func ParseMigrationsDirFiles(fsys embed.FS, dirName string) ([]Migration, error) {
+	var migrations []Migration
+
+	files, err := fsys.ReadDir(dirName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		readFile, err := fsys.ReadFile(dirName + "/" + file.Name())
+		if err != nil {
+			return nil, err
+		}
+
+		migs := ParseMigrations(string(readFile))
+		migrations = append(migrations, migs...)
+	}
+
+	return migrations, nil
+}
+
 // ParseMigrations takes a string that represents a text formatted set
 // of migrations and parse them for use.
 func ParseMigrations(s string) []Migration {
@@ -103,10 +127,9 @@ func ParseMigrations(s string) []Migration {
 	var m Migration
 	var script string
 	for scanner.Scan() {
-		v := strings.ToLower(scanner.Text())
-
+		v := scanner.Text()
 		switch {
-		case strings.HasPrefix(strings.Replace(v, " ", "", 1), "--version:"):
+		case strings.HasPrefix(strings.Replace(strings.ToLower(v), " ", "", 1), "--version:"):
 
 			m.Script = script
 			migrations = append(migrations, m)
@@ -116,11 +139,12 @@ func ParseMigrations(s string) []Migration {
 
 			f, err := strconv.ParseFloat(strings.TrimSpace(v[11:]), 64)
 			if err != nil {
+				fmt.Printf("Error: %v", err)
 				return nil
 			}
 			m.Version = f
 
-		case strings.HasPrefix(strings.Replace(v, " ", "", 1), "--description:"):
+		case strings.HasPrefix(strings.Replace(strings.ToLower(v), " ", "", 1), "--description:"):
 			m.Description = strings.TrimSpace(v[15:])
 
 		default:
@@ -367,7 +391,7 @@ func planMigration(d Driver, migrations []Migration) ([]Migration, error) {
 	}
 
 	// Which migrations needs to be applied
-	planned := []Migration{}
+	var planned []Migration
 
 	// Make sure the order is correct
 	// Do not trust the driver.
